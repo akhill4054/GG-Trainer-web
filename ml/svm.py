@@ -32,7 +32,7 @@ def try_to_predict(data):
 
 #     model.fit(X_train, Y_train)
 
-#     # Save the model
+#     # Save the model?
 #     joblib.dump(model, 'model2.joblib')
 
 def retrain_model(gestures):
