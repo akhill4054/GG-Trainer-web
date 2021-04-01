@@ -1,1 +1,1 @@
-web: gunicorn ggtweb.wsgi --log-file -
+web: gunicorn ggtweb.wsgi
