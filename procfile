@@ -1,1 +1,2 @@
-web gunicorn ggtweb.wsgi
+#web gunicorn ggtweb.wsgi
+web: gunicorn ggtweb:app
