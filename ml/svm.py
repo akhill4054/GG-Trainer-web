@@ -50,9 +50,6 @@ def retrain_model(gestures):
     X_train = np.asarray(x_rows)
     Y_train = np.asarray(y_col)
 
-    print(x_rows, y_col)
-    print(X_train, Y_train)
-
     model.fit(X_train, Y_train)
 
     # Save the model
