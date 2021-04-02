@@ -1,5 +1,5 @@
 # Create your views here.
-from django.http.response import JsonResponse
+from django.http.response import HttpResponse, JsonResponse
 from numpy import where
 from rest_framework import status
 from .serializers import GestureSerializer, TranslateRequestSerializer, ResetSerializer
@@ -7,6 +7,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Gesture
 from . import svm
+
+def home(request):
+    return HttpResponse("<h1>Hello World!</h1>")
 
 @api_view(['POST'])
 def translate(request):
