@@ -18,16 +18,10 @@ def translate(request):
     serializer = TranslateRequestSerializer(data=request.data)
     if serializer.is_valid():
         # Do translation
-        translation = None
-
         try:
             translation = svm.try_to_predict(serializer.data['data'])
-        except:
-            translate = None
-
-        if translation != None:
             return Response(translation[0], status=status.HTTP_200_OK)
-        else:
+        except:
             return Response('NULL', status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
