@@ -20,7 +20,7 @@ def translate(request):
         if translation != None:
             return Response(translation[0], status=status.HTTP_200_OK)
         else:
-            return Response('Couldn\'t translate', 201)
+            return Response('NULL', status=status.HTTP_200_OK)
     else:    
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -68,14 +68,14 @@ def sync(request):
 def remove_synced_gesture(request):
     serializer = RemoveSyncedGestureSerializer(data=request.data)
     if serializer.is_valid():
-        gestures = Gesture.objects.filter(mapped_text=serializer.mapped_text)
+        gestures = Gesture.objects.filter(mapped_text=serializer.data['mapped_text'])
 
         if len(gestures) > 0:
             gestures.delete()
-            retrain_model(Gesture.objects.all())
+            retrain_model()
             return Response('Gesture removed successfully', status=status.HTTP_200_OK)
         else:
-            return Response('Gesture not found', status=status.status.HTTP_404_NOT_FOUND)
+            return Response('Gesture not found', status=status.HTTP_404_NOT_FOUND)
     else:    
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -96,7 +96,7 @@ def retrain_model():
     gestures = Gesture.objects.all()
     # Train model
     if len(gestures) > 0:
-        if len(gestures) == 1:
+        if len(gestures) == 1 and gestures[0].mapped_text != 'NULL':
             # Insert dummy class
             data = ''
             for i in range(15):
@@ -105,4 +105,10 @@ def retrain_model():
                 else: data += '\n'
             Gesture(data = data, mapped_text='NULL').save()
             gestures = Gesture.objects.all()
-        svm.retrain_model(gestures)
+
+        try:
+            svm.retrain_model(gestures)
+        except:
+            from sklearn.svm import SVC
+            from joblib import dump as j_dump
+            j_dump(SVC(), 'model1.joblib')
