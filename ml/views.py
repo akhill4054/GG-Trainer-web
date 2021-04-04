@@ -104,9 +104,7 @@ def reset(request):
             Gesture.objects.all().delete()
 
             # Reset saved model
-            from sklearn.svm import SVC
-            from joblib import dump as j_dump
-            j_dump(SVC(), 'model.joblib')
+            svm.reset()
 
             return Response('Reset successful!', status=status.HTTP_200_OK)
 
@@ -133,7 +131,6 @@ def retrain_model():
             svm.retrain_model(gestures)
             return True
         except:
-            from sklearn.svm import SVC
-            from joblib import dump as j_dump
-            j_dump(SVC(), 'model.joblib')
+            # Reset the model
+            svm.reset()
     return False

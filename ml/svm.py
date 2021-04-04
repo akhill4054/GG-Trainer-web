@@ -1,4 +1,5 @@
 from operator import mod
+from pickle import dump
 import joblib
 import numpy as np
 from sklearn.svm import SVC
@@ -37,7 +38,9 @@ def try_to_predict(data):
 
 #     # Save the model?
 #     joblib.dump(model, 'model2.joblib')
-
+def reset():
+    model = SVC()
+    dump(model, 'model.joblib')
 
 def retrain_model(gestures):
     x_rows = []
