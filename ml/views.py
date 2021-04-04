@@ -2,7 +2,7 @@
 from django.http.response import HttpResponse, JsonResponse
 from numpy import where
 from rest_framework import status
-from .serializers import GestureSerializer, TranslateRequestSerializer, ResetSerializer
+from .serializers import GestureSerializer, TranslateRequestSerializer, ResetSerializer, RemoveSyncedGestureSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Gesture
@@ -18,9 +18,9 @@ def translate(request):
         # Do translation
         translation = svm.try_to_predict(serializer.data['data'])
         if translation != None:
-            return Response(translation, status=status.HTTP_200_OK)
+            return Response(translation[0], status=status.HTTP_200_OK)
         else:
-            return Response('Couldn\'t translate', status=status.HTTP_200_OK)
+            return Response('Couldn\'t translate', 201)
     else:    
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -35,12 +35,12 @@ def gestures(request):
 def sync(request):
     serializer = GestureSerializer(data=request.data)
     if serializer.is_valid():
-        
         gesture_results = Gesture.objects.filter(mapped_text=serializer.data['mapped_text'])
 
         gesture = Gesture(
             data = serializer.data['data'],
-            mapped_text = serializer.data['mapped_text']
+            mapped_text = serializer.data['mapped_text'],
+            rd = serializer.data['rd']
         )
 
         msg = None
@@ -66,15 +66,16 @@ def sync(request):
 
 @api_view(['POST'])
 def remove_synced_gesture(request):
-    serializer = GestureSerializer(data=request.data)
+    serializer = RemoveSyncedGestureSerializer(data=request.data)
     if serializer.is_valid():
-        gesture = Gesture.objects.filter(mapped_text=serializer.mapped_text)
-        # Save gesture
-        serializer.save()
+        gestures = Gesture.objects.filter(mapped_text=serializer.mapped_text)
 
-        retrain_model()
-
-        return Response('Training successfull!', status=status.HTTP_200_OK)
+        if len(gestures) > 0:
+            gestures.delete()
+            retrain_model(Gesture.objects.all())
+            return Response('Gesture removed successfully', status=status.HTTP_200_OK)
+        else:
+            return Response('Gesture not found', status=status.status.HTTP_404_NOT_FOUND)
     else:    
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

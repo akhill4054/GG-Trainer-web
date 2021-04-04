@@ -22,8 +22,11 @@ def process_data(data):
     return lines
 
 def try_to_predict(data):
-    values = process_data(data)
-    return model.predict(values)
+    try:
+        values = process_data(data)
+        return model.predict(values)
+    except:
+        return None    
 
 # def train_model(gesture):
 #     values = process_data(gesture.data)
