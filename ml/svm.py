@@ -6,7 +6,7 @@ from sklearn.svm import SVC
 model = None
 
 try:
-    model = joblib.load('model1.joblib')
+    model = joblib.load('model.joblib')
 except:
     # Classifier
     model = SVC()
@@ -57,4 +57,4 @@ def retrain_model(gestures):
     model.fit(X_train, Y_train)
 
     # Save the model
-    joblib.dump(model, 'model1.joblib')
+    joblib.dump(model, 'model.joblib')

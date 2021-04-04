@@ -97,6 +97,11 @@ def reset(request):
             # Clear db
             Gesture.objects.all().delete()
 
+            # Reset saved model
+            from sklearn.svm import SVC
+            from joblib import dump as j_dump
+            j_dump(SVC(), 'model.joblib')
+
             return Response('Reset successful!', status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -124,5 +129,5 @@ def retrain_model():
         except:
             from sklearn.svm import SVC
             from joblib import dump as j_dump
-            j_dump(SVC(), 'model1.joblib')
+            j_dump(SVC(), 'model.joblib')
     return False
