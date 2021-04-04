@@ -8,8 +8,10 @@ from rest_framework.response import Response
 from .models import Gesture
 from . import svm
 
+
 def home(request):
     return HttpResponse("<h1>Hello World!</h1>")
+
 
 @api_view(['POST'])
 def translate(request):
@@ -21,54 +23,60 @@ def translate(request):
             return Response(translation[0], status=status.HTTP_200_OK)
         else:
             return Response('NULL', status=status.HTTP_200_OK)
-    else:    
+    else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 def gestures(request):
     gestures = Gesture.objects.all()
     serializer = GestureSerializer(gestures, many=True)
-    
+
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def sync(request):
     serializer = GestureSerializer(data=request.data)
     if serializer.is_valid():
-        gesture_results = Gesture.objects.filter(mapped_text=serializer.data['mapped_text'])
+        gesture_results = Gesture.objects.filter(
+            mapped_text=serializer.data['mapped_text'])
 
         gesture = Gesture(
-            data = serializer.data['data'],
-            mapped_text = serializer.data['mapped_text'],
-            rd = serializer.data['rd']
+            data=serializer.data['data'],
+            mapped_text=serializer.data['mapped_text'],
+            rd=serializer.data['rd']
         )
 
         msg = None
-        
+
         if len(gesture_results) > 0:
             # Already exists
             gesture = gesture_results[0]
             gesture.data = serializer.data['data']
             gesture.save()
             # Retrain model
-            retrain_model()
             msg = 'Training successfull! [Old gesture replaced]'
         else:
             # Save gesture
             gesture.save()
             # Train model
-            retrain_model()
             msg = 'Training successfull!'
-            
+
+        if not retrain_model():
+            return Response('Couldn\'t train!', status=201)
+
         return Response(msg, status=status.HTTP_200_OK)
-    else:    
+    else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def remove_synced_gesture(request):
     serializer = RemoveSyncedGestureSerializer(data=request.data)
     if serializer.is_valid():
-        gestures = Gesture.objects.filter(mapped_text=serializer.data['mapped_text'])
+        gestures = Gesture.objects.filter(
+            mapped_text=serializer.data['mapped_text'])
 
         if len(gestures) > 0:
             gestures.delete()
@@ -76,8 +84,9 @@ def remove_synced_gesture(request):
             return Response('Gesture removed successfully', status=status.HTTP_200_OK)
         else:
             return Response('Gesture not found', status=status.HTTP_404_NOT_FOUND)
-    else:    
+    else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def reset(request):
@@ -87,10 +96,11 @@ def reset(request):
         if serializer.data['pass_key'] == 'asdf1234':
             # Clear db
             Gesture.objects.all().delete()
-    
+
             return Response('Reset successful!', status=status.HTTP_200_OK)
- 
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 def retrain_model():
     gestures = Gesture.objects.all()
@@ -101,14 +111,18 @@ def retrain_model():
             data = ''
             for i in range(15):
                 data += '0'
-                if i != 14: data += ','
-                else: data += '\n'
-            Gesture(data = data, mapped_text='NULL').save()
+                if i != 14:
+                    data += ','
+                else:
+                    data += '\n'
+            Gesture(data=data, mapped_text='NULL').save()
             gestures = Gesture.objects.all()
 
         try:
             svm.retrain_model(gestures)
+            return True
         except:
             from sklearn.svm import SVC
             from joblib import dump as j_dump
             j_dump(SVC(), 'model1.joblib')
+    return False

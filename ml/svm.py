@@ -11,22 +11,22 @@ except:
     # Classifier
     model = SVC()
 
+
 def process_data(data):
     lines = []
     for l in data.split('\n'):
-        if l != '': lines.append(l)
+        if l != '':
+            lines.append(l)
     for i, v in enumerate(lines):
-        values = [int(c) for c in v.split(',')]
+        values = [float(c) for c in v.split(',')]
         assert(len(values) == 15)
         lines[i] = values
     return lines
 
+
 def try_to_predict(data):
-    try:
-        values = process_data(data)
-        return model.predict(values)
-    except:
-        return None    
+    values = process_data(data)
+    return model.predict(values)
 
 # def train_model(gesture):
 #     values = process_data(gesture.data)
@@ -37,6 +37,7 @@ def try_to_predict(data):
 
 #     # Save the model?
 #     joblib.dump(model, 'model2.joblib')
+
 
 def retrain_model(gestures):
     x_rows = []
@@ -49,7 +50,7 @@ def retrain_model(gestures):
         for values in value_rows:
             x_rows.append(values)
             y_col.append(mapping)
-    
+
     X_train = np.asarray(x_rows)
     Y_train = np.asarray(y_col)
 
