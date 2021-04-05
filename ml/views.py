@@ -19,8 +19,19 @@ def translate(request):
     if serializer.is_valid():
         # Do translation
         try:
-            translation = svm.try_to_predict(serializer.data['data'])
-            return Response(translation[0], status=status.HTTP_200_OK)
+            translations = svm.try_to_predict(serializer.data['data'])
+
+            f_map = {}
+            for r in translations:
+                if r in f_map: f_map[r] += 1
+                else: f_map[r] = 1
+
+            max_f = 0; translation = ''
+            for r, f in f_map.items():
+                if f > max_f:
+                    max_f = f; translation = r
+
+            return Response(translation, status=status.HTTP_200_OK)
         except:
             return Response('NULL', status=status.HTTP_200_OK)
     else:

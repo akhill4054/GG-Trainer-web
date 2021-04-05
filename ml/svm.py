@@ -40,7 +40,7 @@ def try_to_predict(data):
 #     joblib.dump(model, 'model2.joblib')
 def reset():
     model = SVC()
-    dump(model, 'model.joblib')
+    joblib.dump(model, 'model.joblib')
 
 def retrain_model(gestures):
     x_rows = []
