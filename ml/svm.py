@@ -29,18 +29,28 @@ def try_to_predict(data):
     values = process_data(data)
     return model.predict(values)
 
-# def train_model(gesture):
-#     values = process_data(gesture.data)
-#     X_train = np.asarray(values)
-#     Y_train = np.asarray([gesture.mapped_test])
 
-#     model.fit(X_train, Y_train)
-
-#     # Save the model?
-#     joblib.dump(model, 'model2.joblib')
 def reset():
     model = SVC()
-    joblib.dump(model, 'model.joblib')
+
+    from .models import Gesture
+
+    # Clear db
+    Gesture.objects.all().delete()
+    
+    data = ''
+    for i in range(15):
+        data += '0'
+        if i != 14:
+            data += ','
+        else:
+            data += '\n'
+    
+    Gesture(data=data, mapped_text='NULL').save()
+    Gesture(data=data, mapped_text='NULL1').save()
+
+    retrain_model(Gesture.objects.all())
+
 
 def retrain_model(gestures):
     x_rows = []

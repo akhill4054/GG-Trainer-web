@@ -105,9 +105,6 @@ def reset(request):
 
     if serializer.is_valid():
         if serializer.data['pass_key'] == 'asdf1234':
-            # Clear db
-            Gesture.objects.all().delete()
-
             # Reset saved model
             svm.reset()
 
